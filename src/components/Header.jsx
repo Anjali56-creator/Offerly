@@ -26,6 +26,9 @@ function Header() {
 
         {user && (
           <div className="header-user">
+            <Link to="/preferences" className="header-pref">
+              📍 Preferences
+            </Link>
             <Link to="/my-internships" className="btn btn-small btn-link">
               My Internships <span className="count-badge">{internships.length}</span>
             </Link>

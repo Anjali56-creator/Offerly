@@ -9,6 +9,7 @@ import CategoryPage from "./pages/CategoryPage.jsx";
 import AddInternship from "./pages/AddInternship.jsx";
 import MyInternships from "./pages/MyInternships.jsx";
 import ListingDetail from "./pages/ListingDetail.jsx";
+import Preferences from "./pages/Preferences.jsx";
 import FloatingButton from "./components/FloatingButton.jsx";
 
 function App() {
@@ -49,6 +50,14 @@ function App() {
           element={
             <ProtectedRoute>
               <MyInternships />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/preferences"
+          element={
+            <ProtectedRoute>
+              <Preferences />
             </ProtectedRoute>
           }
         />

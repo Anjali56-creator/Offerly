@@ -1050,6 +1050,104 @@ button {
   gap: 14px;
 }
 
+/* ---------- location chips, preferences ---------- */
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  background: transparent;
+  border: 1.5px dashed var(--ink-soft);
+  border-radius: 20px;
+  padding: 3px 12px;
+}
+
+.chip:hover {
+  background: var(--paper-dark);
+}
+
+.chip.active {
+  background: var(--ink);
+  border: 1.5px solid var(--ink);
+  color: var(--paper);
+}
+
+.pref-heading {
+  font-family: var(--font-hand);
+  font-size: 1.7rem;
+  margin: 18px 0 8px;
+}
+
+.pref-error {
+  margin-top: 12px;
+}
+
+.pref-link,
+.header-pref {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.header-pref {
+  color: var(--ink);
+}
+
+.category-near {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* ---------- application status badges, listing card ---------- */
+
+.app-status {
+  display: inline-block;
+  padding: 1px 10px;
+  border-radius: 12px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+  border: 1px solid rgba(42, 39, 35, 0.3);
+}
+
+.status-open-now {
+  background: #cfe8cf;
+}
+
+.status-opens-soon {
+  background: #f8e9a6;
+}
+
+.status-rolling {
+  background: #cfe0f4;
+}
+
+.status-closed {
+  background: #dedad2;
+  color: var(--ink-soft);
+}
+
+.status-check-site {
+  background: transparent;
+  border: 1.5px dashed var(--ink-soft);
+}
+
+.eligibility-line {
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.source-line {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+
 /* ---------- responsive ---------- */
 
 @media (max-width: 900px) {

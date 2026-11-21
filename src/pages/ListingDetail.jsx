@@ -2,6 +2,7 @@ import { Link, useParams } from "react-router-dom";
 import { LISTINGS } from "../data/internships.js";
 import { findCategory } from "../utils/categories.js";
 import { formatDate } from "../utils/dates.js";
+import { effectiveStatus, statusClass } from "../utils/listings.js";
 import DeadlineBadge from "../components/DeadlineBadge.jsx";
 import ListingAddButton from "../components/ListingAddButton.jsx";
 
@@ -21,8 +22,7 @@ function ListingDetail() {
   }
 
   const category = findCategory(listing.category);
-  const stipendText =
-    listing.stipend === "Unpaid" ? "Unpaid" : "₹" + listing.stipend.toLocaleString("en-IN") + "/month";
+  const status = effectiveStatus(listing);
 
   return (
     <main className="page">
@@ -31,33 +31,43 @@ function ListingDetail() {
       </Link>
 
       <article className="detail-card" style={{ borderTopColor: category.color }}>
-        <h2 className="page-title">{listing.organisation}</h2>
-        <p className="detail-role">{listing.role}</p>
+        <div className="card-top">
+          <div>
+            <h2 className="page-title">{listing.organisation}</h2>
+            <p className="detail-role">{listing.programName}</p>
+          </div>
+          <span className={"app-status " + statusClass(status)}>{status}</span>
+        </div>
 
         <p className="listing-desc">{listing.description}</p>
 
         <dl className="detail-list">
+          <dt>Role</dt>
+          <dd>{listing.role}</dd>
           <dt>Location</dt>
           <dd>
-            {listing.location} ({listing.mode})
+            {listing.locations.join(", ")}
+            {listing.state.length > 0 ? " (" + listing.state.join(", ") + ")" : ""} · {listing.mode}
           </dd>
           <dt>Stipend</dt>
-          <dd>{stipendText}</dd>
+          <dd>{listing.stipend}</dd>
           <dt>Duration</dt>
           <dd>{listing.duration}</dd>
+          <dt>Eligibility</dt>
+          <dd>{listing.eligibility}</dd>
           <dt>Deadline</dt>
           <dd>
-            {formatDate(listing.deadline)} <DeadlineBadge deadline={listing.deadline} />
+            {listing.deadline ? (
+              <>
+                {formatDate(listing.deadline)} <DeadlineBadge deadline={listing.deadline} />
+              </>
+            ) : (
+              listing.applicationWindow || "No fixed date. Check the official page."
+            )}
           </dd>
-          <dt>Skills</dt>
+          <dt>Source</dt>
           <dd>
-            <span className="skills">
-              {listing.skills.map((skill) => (
-                <span className="skill" key={skill}>
-                  {skill}
-                </span>
-              ))}
-            </span>
+            {listing.sourceName} · verified {formatDate(listing.lastVerified)}
           </dd>
         </dl>
 
@@ -69,7 +79,7 @@ function ListingDetail() {
         </div>
 
         <p className="demo-note">
-          Sample listing for demo — always check the official website for real openings and deadlines.
+          Links go to official websites. Dates can change, so always confirm on the official page before applying.
         </p>
       </article>
     </main>

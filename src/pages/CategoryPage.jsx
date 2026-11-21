@@ -1,7 +1,10 @@
 import { useState, useMemo } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
 import { useMyInternships } from "../context/InternshipsContext.jsx";
 import { findCategory } from "../utils/categories.js";
+import { loadPreferences, matchesPreferences, REMOTE, PAN_INDIA } from "../utils/locations.js";
+import { compareListings } from "../utils/listings.js";
 import { LISTINGS } from "../data/internships.js";
 import InternshipCard from "../components/InternshipCard.jsx";
 import ListingCard from "../components/ListingCard.jsx";
@@ -10,16 +13,31 @@ import QuickAddModal from "../components/QuickAddModal.jsx";
 function CategoryPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { internships, deleteInternship } = useMyInternships();
   const [quickOpen, setQuickOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [mode, setMode] = useState("All");
+  const [place, setPlace] = useState("All");
   const [paidOnly, setPaidOnly] = useState(false);
-  const [sortBy, setSortBy] = useState("deadline");
+  const [myLocationsOn, setMyLocationsOn] = useState(true);
 
+  const prefs = useMemo(() => loadPreferences(user.email), [user.email]);
   const category = findCategory(slug);
 
   const categoryListings = useMemo(() => LISTINGS.filter((l) => l.category === slug), [slug]);
+
+  // cities and states that appear in this category, for the dropdown
+  const placeOptions = useMemo(() => {
+    const places = new Set();
+    categoryListings.forEach((l) => {
+      l.locations.forEach((p) => places.add(p));
+      l.state.forEach((p) => places.add(p));
+    });
+    places.delete(REMOTE);
+    places.delete(PAN_INDIA);
+    return [...places].sort();
+  }, [categoryListings]);
 
   const visibleListings = useMemo(() => {
     const text = search.trim().toLowerCase();
@@ -28,21 +46,17 @@ function CategoryPage() {
         const matchesSearch =
           !text ||
           l.organisation.toLowerCase().includes(text) ||
+          l.programName.toLowerCase().includes(text) ||
           l.role.toLowerCase().includes(text) ||
-          l.skills.some((skill) => skill.toLowerCase().includes(text));
+          l.locations.some((p) => p.toLowerCase().includes(text));
         const matchesMode = mode === "All" || l.mode === mode;
-        const matchesPaid = !paidOnly || l.stipend !== "Unpaid";
-        return matchesSearch && matchesMode && matchesPaid;
+        const matchesPlace = place === "All" || l.locations.includes(place) || l.state.includes(place);
+        const matchesPaid = !paidOnly || /[₹$]/.test(l.stipend);
+        const matchesMine = !myLocationsOn || matchesPreferences(l, prefs);
+        return matchesSearch && matchesMode && matchesPlace && matchesPaid && matchesMine;
       })
-      .sort((a, b) => {
-        if (sortBy === "stipend") {
-          const stipendA = a.stipend === "Unpaid" ? 0 : a.stipend;
-          const stipendB = b.stipend === "Unpaid" ? 0 : b.stipend;
-          return stipendB - stipendA;
-        }
-        return a.deadline.localeCompare(b.deadline);
-      });
-  }, [categoryListings, search, mode, paidOnly, sortBy]);
+      .sort(compareListings);
+  }, [categoryListings, search, mode, place, paidOnly, myLocationsOn, prefs]);
 
   if (!category) {
     return (
@@ -82,7 +96,7 @@ function CategoryPage() {
       </div>
 
       <p className="demo-note">
-        Sample listings for demo — always check the official website for real openings and deadlines.
+        Links go to official websites. Dates can change, so always confirm on the official page before applying.
       </p>
 
       {myItems.length > 0 && (
@@ -108,10 +122,22 @@ function CategoryPage() {
           <input
             className="search"
             type="search"
-            placeholder="Search organisation, role or skill..."
+            placeholder="Search organisation, program, role or city..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+
+          <label className="filter-item">
+            City / state
+            <select value={place} onChange={(e) => setPlace(e.target.value)}>
+              <option value="All">All places</option>
+              {placeOptions.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
+          </label>
 
           <label className="filter-item">
             Mode
@@ -123,22 +149,28 @@ function CategoryPage() {
             </select>
           </label>
 
-          <label className="filter-item">
-            Sort by
-            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-              <option value="deadline">Nearest deadline</option>
-              <option value="stipend">Highest stipend</option>
-            </select>
-          </label>
-
           <label className="filter-check">
             <input type="checkbox" checked={paidOnly} onChange={(e) => setPaidOnly(e.target.checked)} />
             Paid only
           </label>
+
+          <button
+            type="button"
+            className={myLocationsOn ? "chip active" : "chip"}
+            aria-pressed={myLocationsOn}
+            onClick={() => setMyLocationsOn(!myLocationsOn)}
+          >
+            📍 My locations
+          </button>
+          <Link to="/preferences" className="pref-link">
+            change
+          </Link>
         </div>
 
-        {visibleListings.length === 0 ? (
-          <p className="empty-text">No listings match your search.</p>
+        {categoryListings.length === 0 ? (
+          <p className="empty-text">No verified listings in this category yet.</p>
+        ) : visibleListings.length === 0 ? (
+          <p className="empty-text">No listings match. Try turning off "My locations".</p>
         ) : (
           <div className="grid">
             {visibleListings.map((listing) => (

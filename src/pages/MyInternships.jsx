@@ -47,7 +47,8 @@ function MyInternships() {
   }, [internships, search, category, status, priority]);
 
   const dueThisWeek = filtered.filter(isDueThisWeek);
-  const upcoming = filtered.filter((item) => !isDueThisWeek(item) && !isPassed(item));
+  const noDeadline = filtered.filter((item) => !item.deadline);
+  const upcoming = filtered.filter((item) => item.deadline && !isDueThisWeek(item) && !isPassed(item));
   // most recently passed first
   const passed = filtered.filter(isPassed).reverse();
 
@@ -103,7 +104,11 @@ function MyInternships() {
     );
   }
 
-  const nothingToShow = dueThisWeek.length === 0 && upcoming.length === 0 && (hidePassed || passed.length === 0);
+  const nothingToShow =
+    dueThisWeek.length === 0 &&
+    upcoming.length === 0 &&
+    noDeadline.length === 0 &&
+    (hidePassed || passed.length === 0);
 
   return (
     <main className="page">
@@ -180,6 +185,14 @@ function MyInternships() {
         <section className="my-section">
           <h3 className="section-title">Upcoming ({upcoming.length})</h3>
           {renderCards(upcoming)}
+        </section>
+      )}
+
+      {noDeadline.length > 0 && (
+        <section className="my-section">
+          <h3 className="section-title">No fixed deadline ({noDeadline.length})</h3>
+          <p className="section-note">Check the official page for dates.</p>
+          {renderCards(noDeadline)}
         </section>
       )}
 

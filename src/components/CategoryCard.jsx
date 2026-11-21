@@ -1,10 +1,13 @@
 import { Link } from "react-router-dom";
 
-function CategoryCard({ category, count }) {
+function CategoryCard({ category, count, nearCount, totalCount }) {
   return (
     <Link to={"/category/" + category.slug} className="category-card" style={{ background: category.color }}>
       <h3 className="category-name">{category.name}</h3>
       <p className="category-desc">{category.description}</p>
+      <p className="category-near">
+        {nearCount} near you · {totalCount} total
+      </p>
       <p className="category-count">{count} saved</p>
     </Link>
   );

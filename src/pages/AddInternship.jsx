@@ -83,8 +83,11 @@ function AddInternship() {
     if (!form.role.trim()) newErrors.role = "Role / position is required";
     if (!form.category) newErrors.category = "Please choose a category";
 
+    // an internship saved without a fixed deadline can stay without one
+    const deadlineOptional = editing && !editing.deadline;
+
     if (!form.deadline) {
-      newErrors.deadline = "Application deadline is required";
+      if (!deadlineOptional) newErrors.deadline = "Application deadline is required";
     } else if (form.deadline < minDate) {
       newErrors.deadline = "Deadline cannot be a past date";
     }
@@ -109,8 +112,8 @@ function AddInternship() {
       company: form.company.trim(),
       role: form.role.trim(),
       category: form.category,
-      deadline: form.deadline,
-      deadlineTime: form.deadlineTime || "23:59",
+      deadline: form.deadline || null,
+      deadlineTime: form.deadline ? form.deadlineTime || "23:59" : "",
       location: form.location.trim(),
       mode: form.mode,
       stipend: form.unpaid || form.stipend === "" ? "" : Number(form.stipend),

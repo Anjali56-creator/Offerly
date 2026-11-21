@@ -6,7 +6,7 @@ import DeadlineBadge from "./DeadlineBadge.jsx";
 function stipendText(item) {
   if (item.unpaid) return "Unpaid";
   if (item.stipend) return "₹" + Number(item.stipend).toLocaleString("en-IN") + "/month";
-  return "";
+  return item.stipendLabel || "";
 }
 
 function MyInternshipCard({ item, onStatusChange, onDelete }) {
@@ -46,7 +46,7 @@ function MyInternshipCard({ item, onStatusChange, onDelete }) {
             <DeadlineBadge deadline={item.deadline} />
           </>
         ) : (
-          <span className="deadline-date">No deadline</span>
+          <span className="deadline-date">{item.applicationWindow || "No fixed deadline"}</span>
         )}
       </p>
 

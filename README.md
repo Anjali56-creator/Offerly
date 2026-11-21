@@ -23,6 +23,10 @@ A notebook-style web app for students to keep track of internship applications. 
 - Click a category to open its page: 8 sample listings per category with search, mode filter, "Paid only" and sort (nearest deadline / highest stipend)
 - One-click **"+ Add"** on every listing card (and on the listing detail page, `/listing/:id`) copies all its details to My Internships as Wishlist. The button turns into "✓ Added" (click again to remove). A toast shows "Added to My Internships · Undo · View"
 - Saved internships also show up on the category page with Edit and Delete
+- **Real, verified listings**: every listing links to its exact official page and shows "Official source · verified <date>". Dates are only shown when the official page states them, otherwise the page's application window is shown in words
+- Status badges (Open now / Opens soon / Rolling / Check site / Closed) and sorting by status, then nearest deadline
+- **Preferences** (asked on first login, editable from the header): pick cities/states, Remote or Anywhere in India. Category pages have a "📍 My locations" chip (on by default) plus a city/state dropdown, and the dashboard shows "X near you · Y total"
+- Listings without a fixed deadline show in a "No fixed deadline" group on My Internships
 - Each user only sees their own data
 
 > Note: the login is a frontend-only demo. Passwords are kept in plain text in localStorage, which is not safe. Real apps must use a backend (e.g. Firebase Auth or Node + JWT) with hashed passwords.
@@ -50,6 +54,7 @@ npm run build
 | --- | --- |
 | `offerly-users` | all registered users |
 | `offerly-session` | the logged-in user |
+| `offerly-prefs-<userEmail>` | the places the user wants to intern |
 | `offerly-reset` | the current password reset code and its expiry |
 | `offerly-data-<userEmail>` | that user's internships |
 
@@ -84,6 +89,7 @@ offerly/
     ├── pages/
     │   ├── Login.jsx
     │   ├── Signup.jsx
+    │   ├── Preferences.jsx      "Where do you want to intern?"
     │   ├── ForgotPassword.jsx
     │   ├── AddInternship.jsx    full form page (used for editing)
     │   ├── ListingDetail.jsx
@@ -94,6 +100,7 @@ offerly/
     │   └── internships.js       sample listings for all 6 categories
     └── utils/
         ├── storage.js           localStorage helpers with try/catch
+        ├── locations.js         states, cities, preferences, location matching
         ├── listings.js          turns a listing into an internship
         ├── dates.js             daysLeft, deadlineText, formatDate, formatTime, todayString
         └── categories.js        the 6 categories
