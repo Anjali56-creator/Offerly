@@ -8,6 +8,8 @@ Built with **React 18, Vite, React Router and plain CSS** (no Tailwind, no UI li
 
 ---
 
+Project link :https://offerly-rouge.vercel.app/
+
 ## The problem it solves
 
 Internship information is scattered across many websites, blogs and WhatsApp forwards. Many blog links are outdated or wrong, and students miss deadlines because nothing reminds them.
