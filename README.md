@@ -1,3 +1,5 @@
+ABESEC Ghaziabad
+
 # Offerly
 
 *from applied to offer*
@@ -10,7 +12,7 @@ Built with **React 18, Vite, React Router, Node.js/Express, and PostgreSQL** (SQ
 
 ## Deployed Render URL
 
-- **Live App (Render):** `https://<your-render-service>.onrender.com` *(replace with your live Render URL after deploying)*
+- **Live App (Render):** https://offerly-kakv.onrender.com
 
 ## Login Credentials (All User Roles)
 
@@ -234,4 +236,10 @@ The app currently runs fully in the browser. The `supabase/` folder holds the da
 
 ## Tech
 
-React 18 · Vite · React Router 6 · plain CSS · localStorage · fonts: Caveat and Source Sans 3 (Google Fonts)
+React 18 · Vite · React Router 6 · Node.js/Express · PostgreSQL · plain CSS · fonts: Caveat and Source Sans 3 (Google Fonts)
+
+---
+
+- **Developed & Maintained By:** Anjali Kumari, Ankur Tiwari (CSE - 11)
+- Full Stack Development Team
+- © 2026 ABESEC Ghaziabad. All Rights Reserved.
