@@ -240,6 +240,6 @@ React 18 · Vite · React Router 6 · Node.js/Express · PostgreSQL · plain CSS
 
 ---
 
-- **Developed & Maintained By:** Anjali Kumari, Ankur Tiwari (CSE - 11)
+- Developed & Maintained By: Anjali kumari and Ankur Tiwari of CSE and section=11
 - Full Stack Development Team
 - © 2026 ABESEC Ghaziabad. All Rights Reserved.
