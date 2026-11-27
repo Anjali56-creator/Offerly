@@ -12,7 +12,7 @@ Built with **React 18, Vite, React Router, Node.js/Express, and PostgreSQL** (SQ
 
 ## Deployed Render URL
 
-- **Live App (Render):** https://offerly-kakv.onrender.com
+- **Live App (Render):** https://offerly-yux5.onrender.com
 
 ## Login Credentials (All User Roles)
 
