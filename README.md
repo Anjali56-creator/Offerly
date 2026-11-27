@@ -10,7 +10,6 @@ Built with **React 18, Vite, React Router and plain CSS** (no Tailwind, no UI li
 
 ---
 
-Project link :https://offerly-rouge.vercel.app/
 Project link: https://offerly-kakv.onrender.com
 
 ## The problem it solves
