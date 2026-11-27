@@ -1,3 +1,5 @@
+ABESEC Ghaziabad
+
 # Offerly
 
 *from applied to offer*
@@ -225,3 +227,8 @@ The app currently runs fully in the browser. The `supabase/` folder holds the da
 ## Tech
 
 React 18 · Vite · React Router 6 · plain CSS · localStorage · fonts: Caveat and Source Sans 3 (Google Fonts)
+
+
+- Developed & Maintained By: < Anjali kumari><Ankur Tiwari>< CSE and section=11> 
+- Full Stack Development Team
+- © 2026 ABESEC Ghaziabad. All Rights Reserved.
