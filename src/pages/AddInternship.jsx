@@ -26,18 +26,27 @@ function AddInternship() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { internships, addInternship, updateInternship } = useMyInternships();
+  const { internships, loading, addInternship, updateInternship } = useMyInternships();
 
   const editing = id ? internships.find((item) => item.id === id) : null;
   const categoryFromUrl = searchParams.get("category") || "";
   const startingCategory = CATEGORIES.some((c) => c.slug === categoryFromUrl) ? categoryFromUrl : "";
 
   const [form, setForm] = useState(
-    editing ? { ...emptyForm, ...editing } : { ...emptyForm, category: startingCategory }
+    editing
+      ? { ...emptyForm, ...editing, deadline: editing.deadline || "" }
+      : { ...emptyForm, category: startingCategory }
   );
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
   const [leaving, setLeaving] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (editing) {
+      setForm({ ...emptyForm, ...editing, deadline: editing.deadline || "" });
+    }
+  }, [editing?.id]);
 
   // show the "added" message for a moment, then go to My Internships
   useEffect(() => {
@@ -51,6 +60,14 @@ function AddInternship() {
     );
     return () => clearTimeout(timer);
   }, [message, leaving, navigate]);
+
+  if (id && loading && !editing) {
+    return (
+      <main className="page">
+        <p className="page-sub">Loading internship...</p>
+      </main>
+    );
+  }
 
   if (id && !editing) {
     return (
@@ -103,7 +120,7 @@ function AddInternship() {
     return newErrors;
   }
 
-  function submit(addAnother) {
+  async function submit(addAnother) {
     const newErrors = validate();
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
@@ -125,11 +142,19 @@ function AddInternship() {
       notes: form.notes.trim(),
     };
 
-    if (editing) {
-      updateInternship(editing.id, data);
-    } else {
-      addInternship({ ...data, createdAt: new Date().toISOString(), source: "manual" });
+    setSubmitting(true);
+    try {
+      if (editing) {
+        await updateInternship(editing.id, data);
+      } else {
+        await addInternship({ ...data, source: "manual" });
+      }
+    } catch (err) {
+      setErrors({ form: err.message || "Could not save internship" });
+      setSubmitting(false);
+      return;
     }
+    setSubmitting(false);
 
     if (addAnother) {
       setForm({ ...emptyForm, category: startingCategory });
@@ -152,13 +177,14 @@ function AddInternship() {
     else navigate("/dashboard");
   }
 
-  const saving = leaving && message !== "";
+  const saving = submitting || (leaving && message !== "");
 
   return (
     <main className="form-page">
       <form className="form-card" onSubmit={handleSubmit} noValidate>
         <h2 className="form-title">{editing ? "Edit Internship" : "Add Internship"}</h2>
 
+        {errors.form && <p className="form-error">{errors.form}</p>}
         {message && <p className="success-box">{message}</p>}
 
         <div className="form-grid">

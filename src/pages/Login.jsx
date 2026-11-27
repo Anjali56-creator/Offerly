@@ -3,12 +3,13 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth, isValidEmail } from "../context/AuthContext.jsx";
 
 function Login() {
-  const { user, login } = useAuth();
+  const { user, authLoading, login } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
 
-  if (user) {
+  if (!authLoading && user) {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -17,7 +18,7 @@ function Login() {
     setErrors({});
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     const newErrors = {};
 
@@ -30,7 +31,10 @@ function Login() {
       return;
     }
 
-    const result = login(form.email, form.password);
+    setSubmitting(true);
+    const result = await login(form.email, form.password);
+    setSubmitting(false);
+
     if (result.ok) {
       navigate("/dashboard");
     } else {
@@ -68,8 +72,8 @@ function Login() {
           Forgot password?
         </Link>
 
-        <button type="submit" className="btn btn-wide">
-          Login
+        <button type="submit" className="btn btn-wide" disabled={submitting}>
+          {submitting ? "Logging in..." : "Login"}
         </button>
 
         <p className="auth-switch">

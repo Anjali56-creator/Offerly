@@ -1,23 +1,22 @@
-// Demo only: a real app would call Firebase sendPasswordResetEmail, or a backend
-// + email service, so the code reaches the user's inbox and is never shown on screen.
-
 import { useState, useEffect } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth, isValidEmail } from "../context/AuthContext.jsx";
 
 function ForgotPassword() {
-  const { user, requestResetCode, checkResetCode, resetPassword } = useAuth();
+  const { user, authLoading, requestResetCode, checkResetCode, resetPassword } = useAuth();
   const navigate = useNavigate();
 
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [demoCode, setDemoCode] = useState("");
+  const [emailSent, setEmailSent] = useState(false);
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [done, setDone] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (!done) return;
@@ -25,40 +24,51 @@ function ForgotPassword() {
     return () => clearTimeout(timer);
   }, [done, navigate]);
 
-  if (user) {
+  if (!authLoading && user) {
     return <Navigate to="/dashboard" replace />;
   }
 
-  function handleSendCode(e) {
+  async function handleSendCode(e) {
     e.preventDefault();
     if (!email.trim()) return setError("Email is required");
     if (!isValidEmail(email.trim())) return setError("Enter a valid email address");
 
-    const result = requestResetCode(email);
+    setSubmitting(true);
+    const result = await requestResetCode(email);
+    setSubmitting(false);
+
     if (!result.ok) return setError(result.error);
 
-    setDemoCode(result.code);
+    setEmailSent(Boolean(result.emailSent));
+    setDemoCode(result.code || "");
     setError("");
     setInfo("");
     setStep(2);
   }
 
-  function handleResend(e) {
+  async function handleResend(e) {
     e.preventDefault();
-    const result = requestResetCode(email);
+    setSubmitting(true);
+    const result = await requestResetCode(email);
+    setSubmitting(false);
+
     if (!result.ok) return setError(result.error);
 
-    setDemoCode(result.code);
+    setEmailSent(Boolean(result.emailSent));
+    setDemoCode(result.code || "");
     setCode("");
     setError("");
     setInfo("A new code has been sent.");
   }
 
-  function handleVerifyCode(e) {
+  async function handleVerifyCode(e) {
     e.preventDefault();
     if (!code.trim()) return setError("Please enter the 6-digit code");
 
-    const result = checkResetCode(email, code);
+    setSubmitting(true);
+    const result = await checkResetCode(email, code);
+    setSubmitting(false);
+
     if (!result.ok) return setError(result.error);
 
     setError("");
@@ -66,13 +76,16 @@ function ForgotPassword() {
     setStep(3);
   }
 
-  function handleNewPassword(e) {
+  async function handleNewPassword(e) {
     e.preventDefault();
     if (!newPassword) return setError("New password is required");
     if (newPassword.length < 6) return setError("Password must be at least 6 characters");
     if (confirm !== newPassword) return setError("Passwords do not match");
 
-    const result = resetPassword(email, code, newPassword);
+    setSubmitting(true);
+    const result = await resetPassword(email, code, newPassword);
+    setSubmitting(false);
+
     if (!result.ok) return setError(result.error);
 
     setError("");
@@ -108,17 +121,21 @@ function ForgotPassword() {
                 autoFocus
               />
             </label>
-            <button type="submit" className="btn btn-wide">
-              Send reset code
+            <button type="submit" className="btn btn-wide" disabled={submitting}>
+              {submitting ? "Sending..." : "Send reset code"}
             </button>
           </form>
         )}
 
         {step === 2 && (
           <form className="step-form" onSubmit={handleVerifyCode} noValidate>
-            <p className="demo-note">Demo mode: your code is {demoCode}</p>
+            {demoCode && (
+              <p className="demo-note">SMTP not configured — your reset code is {demoCode}</p>
+            )}
             <p className="step-help">
-              We "sent" a 6-digit code to {email.trim()}. It works for 10 minutes.
+              {emailSent
+                ? `We sent a 6-digit code to ${email.trim()}. It works for 10 minutes.`
+                : `Enter the 6-digit reset code for ${email.trim()}. It works for 10 minutes.`}
             </p>
             {info && <p className="info-text">{info}</p>}
 
@@ -135,8 +152,8 @@ function ForgotPassword() {
                 autoFocus
               />
             </label>
-            <button type="submit" className="btn btn-wide">
-              Verify code
+            <button type="submit" className="btn btn-wide" disabled={submitting}>
+              {submitting ? "Verifying..." : "Verify code"}
             </button>
             <p className="auth-switch">
               Didn't get it?{" "}
@@ -172,8 +189,8 @@ function ForgotPassword() {
                 }}
               />
             </label>
-            <button type="submit" className="btn btn-wide">
-              Change password
+            <button type="submit" className="btn btn-wide" disabled={submitting}>
+              {submitting ? "Updating..." : "Change password"}
             </button>
           </form>
         )}

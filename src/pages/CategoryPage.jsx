@@ -1,11 +1,11 @@
 import { useState, useMemo } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useListings } from "../context/ListingsContext.jsx";
 import { useMyInternships } from "../context/InternshipsContext.jsx";
 import { findCategory } from "../utils/categories.js";
-import { loadPreferences, matchesPreferences, REMOTE, PAN_INDIA } from "../utils/locations.js";
+import { matchesPreferences, REMOTE, PAN_INDIA } from "../utils/locations.js";
 import { compareListings } from "../utils/listings.js";
-import { LISTINGS } from "../data/internships.js";
 import InternshipCard from "../components/InternshipCard.jsx";
 import ListingCard from "../components/ListingCard.jsx";
 import QuickAddModal from "../components/QuickAddModal.jsx";
@@ -14,6 +14,7 @@ function CategoryPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { listings, loading: listingsLoading } = useListings();
   const { internships, deleteInternship } = useMyInternships();
   const [quickOpen, setQuickOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -22,10 +23,13 @@ function CategoryPage() {
   const [paidOnly, setPaidOnly] = useState(false);
   const [myLocationsOn, setMyLocationsOn] = useState(true);
 
-  const prefs = useMemo(() => loadPreferences(user.email), [user.email]);
+  const prefs = user?.preferredLocations ?? null;
   const category = findCategory(slug);
 
-  const categoryListings = useMemo(() => LISTINGS.filter((l) => l.category === slug), [slug]);
+  const categoryListings = useMemo(
+    () => listings.filter((l) => l.category === slug),
+    [listings, slug]
+  );
 
   // cities and states that appear in this category, for the dropdown
   const placeOptions = useMemo(() => {
@@ -71,9 +75,9 @@ function CategoryPage() {
 
   const myItems = internships.filter((item) => item.category === slug);
 
-  function handleDelete(id) {
+  async function handleDelete(id) {
     if (window.confirm("Delete this internship?")) {
-      deleteInternship(id);
+      await deleteInternship(id);
     }
   }
 
@@ -167,7 +171,9 @@ function CategoryPage() {
           </Link>
         </div>
 
-        {categoryListings.length === 0 ? (
+        {listingsLoading ? (
+          <p className="empty-text">Loading listings...</p>
+        ) : categoryListings.length === 0 ? (
           <p className="empty-text">No verified listings in this category yet.</p>
         ) : visibleListings.length === 0 ? (
           <p className="empty-text">No listings match. Try turning off "My locations".</p>

@@ -1,5 +1,3 @@
-import { readJSON, writeJSON } from "./storage.js";
-
 export const ANYWHERE = "Anywhere in India";
 export const REMOTE = "Remote";
 export const PAN_INDIA = "Pan-India";
@@ -49,14 +47,6 @@ export const CITIES = [
   "Noida",
   "Gurugram",
 ];
-
-export function loadPreferences(email) {
-  return readJSON("offerly-prefs-" + email, null);
-}
-
-export function savePreferences(email, locations) {
-  writeJSON("offerly-prefs-" + email, locations);
-}
 
 // does this listing fit the places the user picked?
 // Remote and Pan-India listings always fit.
