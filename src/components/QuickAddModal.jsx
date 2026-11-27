@@ -22,6 +22,7 @@ function QuickAddModal({ defaultCategory, onClose }) {
   const [form, setForm] = useState({ ...emptyForm, category: defaultCategory || "" });
   const [errors, setErrors] = useState({});
   const [showMore, setShowMore] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     function handleKey(e) {
@@ -37,7 +38,7 @@ function QuickAddModal({ defaultCategory, onClose }) {
     if (errors[name]) setErrors({ ...errors, [name]: "" });
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     const newErrors = {};
 
@@ -55,27 +56,32 @@ function QuickAddModal({ defaultCategory, onClose }) {
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
 
-    const newId = addInternship({
-      source: "manual",
-      createdAt: new Date().toISOString(),
-      company: form.company.trim(),
-      role: form.role.trim(),
-      category: form.category,
-      deadline: form.deadline,
-      deadlineTime: "23:59",
-      location: form.location.trim(),
-      mode: form.mode,
-      stipend: form.stipend === "" ? "" : Number(form.stipend),
-      unpaid: false,
-      duration: "",
-      link: form.link.trim(),
-      status: "Wishlist",
-      priority: "Medium",
-      notes: form.notes.trim(),
-    });
+    setSubmitting(true);
+    try {
+      const newId = await addInternship({
+        source: "manual",
+        company: form.company.trim(),
+        role: form.role.trim(),
+        category: form.category,
+        deadline: form.deadline,
+        deadlineTime: "23:59",
+        location: form.location.trim(),
+        mode: form.mode,
+        stipend: form.stipend === "" ? "" : Number(form.stipend),
+        unpaid: false,
+        duration: "",
+        link: form.link.trim(),
+        status: "Wishlist",
+        priority: "Medium",
+        notes: form.notes.trim(),
+      });
 
-    onClose();
-    showToast("Added to My Internships", () => deleteInternship(newId));
+      onClose();
+      showToast("Added to My Internships", () => deleteInternship(newId));
+    } catch (err) {
+      setErrors({ form: err.message || "Could not add internship" });
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -87,6 +93,8 @@ function QuickAddModal({ defaultCategory, onClose }) {
     >
       <form className="modal" onSubmit={handleSubmit} noValidate>
         <h2 className="modal-title">Quick add</h2>
+
+        {errors.form && <p className="form-error">{errors.form}</p>}
 
         <div className="quick-row">
           <label className="field">
@@ -169,11 +177,11 @@ function QuickAddModal({ defaultCategory, onClose }) {
         )}
 
         <div className="modal-buttons">
-          <button type="button" className="btn btn-outline" onClick={onClose}>
+          <button type="button" className="btn btn-outline" onClick={onClose} disabled={submitting}>
             Cancel
           </button>
-          <button type="submit" className="btn">
-            Add
+          <button type="submit" className="btn" disabled={submitting}>
+            {submitting ? "Adding..." : "Add"}
           </button>
         </div>
       </form>

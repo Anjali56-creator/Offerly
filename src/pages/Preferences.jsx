@@ -1,17 +1,18 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
-import { ANYWHERE, REMOTE, STATES, CITIES, loadPreferences, savePreferences } from "../utils/locations.js";
+import { ANYWHERE, REMOTE, STATES, CITIES } from "../utils/locations.js";
 
 function Preferences() {
-  const { user } = useAuth();
+  const { user, savePreferences } = useAuth();
   const navigate = useNavigate();
 
-  const saved = loadPreferences(user.email);
+  const saved = user?.preferredLocations ?? null;
   const isFirstTime = saved === null;
 
   const [selected, setSelected] = useState(saved || []);
   const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   function toggle(place) {
     setError("");
@@ -28,18 +29,32 @@ function Preferences() {
     }
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (selected.length === 0) {
       setError("Please pick at least one place");
       return;
     }
-    savePreferences(user.email, selected);
-    navigate("/dashboard");
+    setSaving(true);
+    try {
+      await savePreferences(selected);
+      navigate("/dashboard");
+    } catch (err) {
+      setError(err.message || "Could not save preferences");
+    } finally {
+      setSaving(false);
+    }
   }
 
-  function handleSkip() {
-    savePreferences(user.email, [ANYWHERE]);
-    navigate("/dashboard");
+  async function handleSkip() {
+    setSaving(true);
+    try {
+      await savePreferences([ANYWHERE]);
+      navigate("/dashboard");
+    } catch (err) {
+      setError(err.message || "Could not save preferences");
+    } finally {
+      setSaving(false);
+    }
   }
 
   function renderChip(place) {
@@ -81,16 +96,16 @@ function Preferences() {
 
         <div className="form-buttons">
           {isFirstTime ? (
-            <button type="button" className="btn btn-outline" onClick={handleSkip}>
+            <button type="button" className="btn btn-outline" onClick={handleSkip} disabled={saving}>
               Skip (anywhere in India)
             </button>
           ) : (
-            <button type="button" className="btn btn-outline" onClick={() => navigate(-1)}>
+            <button type="button" className="btn btn-outline" onClick={() => navigate(-1)} disabled={saving}>
               Cancel
             </button>
           )}
-          <button type="button" className="btn" onClick={handleSave}>
-            Save
+          <button type="button" className="btn" onClick={handleSave} disabled={saving}>
+            {saving ? "Saving..." : "Save"}
           </button>
         </div>
       </div>

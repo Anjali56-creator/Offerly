@@ -1,31 +1,73 @@
-import { useState, useEffect } from "react";
-import { loadInternships, saveInternships, makeId } from "../utils/storage.js";
+import { useState, useEffect, useCallback } from "react";
+import { apiRequest } from "../lib/api.js";
 
-// keeps one user's internships in state and saves them to localStorage
-function useInternships(email) {
-  const [internships, setInternships] = useState(() => loadInternships(email));
+function useInternships(userId) {
+  const [internships, setInternships] = useState([]);
+  const [loading, setLoading] = useState(Boolean(userId));
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!email) return;
-    saveInternships(email, internships);
-  }, [email, internships]);
+    if (!userId) {
+      setInternships([]);
+      setLoading(false);
+      setError("");
+      return;
+    }
 
-  // returns the new id, so the caller can undo the add
-  function addInternship(data) {
-    const id = makeId();
-    setInternships((list) => [...list, { ...data, id }]);
-    return id;
-  }
+    let cancelled = false;
+    setLoading(true);
+    setError("");
 
-  function updateInternship(id, data) {
-    setInternships((list) => list.map((item) => (item.id === id ? { ...item, ...data } : item)));
-  }
+    apiRequest("/api/internships")
+      .then((data) => {
+        if (!cancelled) {
+          setInternships(data.internships || []);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(err.message || "Could not load saved internships");
+          setLoading(false);
+        }
+      });
 
-  function deleteInternship(id) {
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+
+  const addInternship = useCallback(async (data) => {
+    const res = await apiRequest("/api/internships", {
+      method: "POST",
+      body: data,
+    });
+    const created = res.internship;
+    setInternships((list) => {
+      if (list.some((item) => item.id === created.id)) return list;
+      return [...list, created];
+    });
+    return created.id;
+  }, []);
+
+  const updateInternship = useCallback(async (id, patch) => {
+    const res = await apiRequest(`/api/internships/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: patch,
+    });
+    const updated = res.internship;
+    setInternships((list) => list.map((item) => (item.id === id ? updated : item)));
+    return updated;
+  }, []);
+
+  const deleteInternship = useCallback(async (id) => {
+    await apiRequest(`/api/internships/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
     setInternships((list) => list.filter((item) => item.id !== id));
-  }
+  }, []);
 
-  return { internships, addInternship, updateInternship, deleteInternship };
+  return { internships, loading, error, addInternship, updateInternship, deleteInternship };
 }
 
 export default useInternships;

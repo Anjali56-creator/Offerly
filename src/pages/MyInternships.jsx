@@ -21,7 +21,7 @@ function isPassed(item) {
 }
 
 function MyInternships() {
-  const { internships, updateInternship, deleteInternship } = useMyInternships();
+  const { internships, loading, updateInternship, deleteInternship } = useMyInternships();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [status, setStatus] = useState("All");
@@ -52,14 +52,23 @@ function MyInternships() {
   // most recently passed first
   const passed = filtered.filter(isPassed).reverse();
 
-  function handleDelete(id) {
+  async function handleDelete(id) {
     if (window.confirm("Delete this internship?")) {
-      deleteInternship(id);
+      await deleteInternship(id);
     }
   }
 
-  function handleStatusChange(id, newStatus) {
-    updateInternship(id, { status: newStatus });
+  async function handleStatusChange(id, newStatus) {
+    await updateInternship(id, { status: newStatus });
+  }
+
+  if (loading && internships.length === 0) {
+    return (
+      <main className="page">
+        <h2 className="page-title">My Internships</h2>
+        <p className="page-sub">Loading your internships...</p>
+      </main>
+    );
   }
 
   if (internships.length === 0) {

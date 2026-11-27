@@ -6,11 +6,22 @@ ABESEC Ghaziabad
 
 Offerly is a notebook-style web app that helps students find **real, official internship programs in India** and keep track of the ones they want to apply for. Instead of searching dozens of websites and writing deadlines on paper, a student can browse verified listings, add them to a personal list with one click, and see which deadlines are coming up.
 
-Built with **React 18, Vite, React Router and plain CSS** (no Tailwind, no UI libraries). Everything is stored in the browser's localStorage, so there is no backend to run.
+Built with **React 18, Vite, React Router, Node.js/Express, and PostgreSQL** (SQLite fallback for local dev without Postgres). Designed for one-click deployment on **Render** via `render.yaml`.
 
 ---
 
-Project link: https://offerly-kakv.onrender.com
+## Deployed Render URL
+
+- **Live App (Render):** https://offerly-kakv.onrender.com
+
+## Login Credentials (All User Roles)
+
+| Role | Email / Username | Password | Access |
+| --- | --- | --- | --- |
+| **Admin** | `admin@offerly.in` | `Admin@123` | Full access including `/admin` panel (manage official listings & view user overview) |
+| **Student** | `student@offerly.in` | `Student@123` | Browse official listings, filter by location preferences, and track personal internships |
+
+*(New students can also create an account anytime on `/signup`.)*
 
 ## The problem it solves
 
@@ -123,40 +134,39 @@ Dates can change, so always confirm on the official page before applying. Each c
 
 ## How it works (short explanation)
 
-- **Routing:** `App.jsx` defines the pages with React Router. `ProtectedRoute` redirects to `/login` when nobody is logged in.
-- **Login:** `AuthContext` keeps the current user in state and in localStorage (`offerly-session`). It is a **demo login**: passwords are stored as plain text in the browser. A real app must use a backend (for example Firebase Auth or Node + JWT) with hashed passwords.
-- **My Internships data:** `InternshipsContext` holds one shared list for the logged-in user, so the header count and every page always match. `useInternships` saves it to localStorage under `offerly-data-<email>`.
-- **Listings:** they are a plain array in `src/data/internships.js`. Helper functions in `utils/listings.js` work out the display status and sorting.
-- **Location filter:** `utils/locations.js` checks each listing's cities and states against the user's preferences. Remote and Pan-India listings always match.
+- **Routing:** `App.jsx` defines the pages with React Router. `ProtectedRoute` waits for `/api/auth/me` and redirects to `/login` when nobody is logged in.
+- **Auth & Sessions:** `server/routes/auth.js` hashes passwords with `bcryptjs`, stores users and password-reset code hashes in PostgreSQL (or local SQLite when `DATABASE_URL` is omitted), and issues HTTP-only JWT cookies.
+- **Listings & My Internships:** `server/index.js` initializes the database schema and seeds the 43 verified listings from `src/data/internships.js` on startup. Each user's saved internships and location preferences are persisted per-user in the database.
+- **Password Reset:** `POST /api/auth/forgot-password` sends a 6-digit code via SMTP (`nodemailer`) when `SMTP_*` variables are configured, or provides a dev fallback code when SMTP is not configured.
 - **Toast:** `ToastContext` shows the "Added · Undo · View" message for 4 seconds.
-
-### localStorage keys
-
-| Key | What it holds |
-| --- | --- |
-| `offerly-users` | all registered users |
-| `offerly-session` | the logged-in user |
-| `offerly-reset` | the current password-reset code and its expiry |
-| `offerly-prefs-<email>` | the places the user wants to intern |
-| `offerly-data-<email>` | that user's My Internships list |
 
 ---
 
-## How to run
+## How to run locally
 
 ```bash
 npm install
 npm run dev
 ```
 
-Then open the local address shown in the terminal (usually http://localhost:5173).
+This starts the Express API server on `http://localhost:3001` (using `./data/offerly-dev.db` automatically when `DATABASE_URL` is not set) and the Vite dev server on `http://localhost:5173`.
 
-To make a production build:
+To run tests or make a production build:
 
 ```bash
+npm test
 npm run build
-npm run preview
+npm start
 ```
+
+---
+
+## Deploy on Render
+
+1. Push this repository to GitHub.
+2. In the [Render Dashboard](https://dashboard.render.com), click **New → Blueprint** and select this repository.
+3. Render automatically reads `render.yaml`, creates the `offerly-db` PostgreSQL database, provisions the `offerly` Node Web Service, generates `JWT_SECRET`, runs `npm install && npm run build`, and starts `npm start`.
+4. *(Optional)* Add `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, and `SMTP_FROM` in the Render service's **Environment** tab to send real password-reset emails.
 
 ---
 
@@ -226,8 +236,9 @@ The app currently runs fully in the browser. The `supabase/` folder holds the da
 
 ## Tech
 
-React 18 · Vite · React Router 6 · plain CSS · localStorage · fonts: Caveat and Source Sans 3 (Google Fonts)
+React 18 · Vite · React Router 6 · Node.js/Express · PostgreSQL · plain CSS · fonts: Caveat and Source Sans 3 (Google Fonts)
 
+---
 
 - Developed & Maintained By: Anjali kumari and Ankur Tiwari of CSE and section=11
 - Full Stack Development Team

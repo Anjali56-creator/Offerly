@@ -1,5 +1,5 @@
 import { Link, useParams } from "react-router-dom";
-import { LISTINGS } from "../data/internships.js";
+import { useListings } from "../context/ListingsContext.jsx";
 import { findCategory } from "../utils/categories.js";
 import { formatDate } from "../utils/dates.js";
 import { effectiveStatus, statusClass } from "../utils/listings.js";
@@ -8,7 +8,16 @@ import ListingAddButton from "../components/ListingAddButton.jsx";
 
 function ListingDetail() {
   const { id } = useParams();
-  const listing = LISTINGS.find((l) => l.id === id);
+  const { listings, loading } = useListings();
+  const listing = listings.find((l) => l.id === id);
+
+  if (loading && !listing) {
+    return (
+      <main className="page">
+        <p className="page-sub">Loading listing...</p>
+      </main>
+    );
+  }
 
   if (!listing) {
     return (

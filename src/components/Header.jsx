@@ -7,8 +7,8 @@ function Header() {
   const { internships } = useMyInternships();
   const navigate = useNavigate();
 
-  function handleLogout() {
-    logout();
+  async function handleLogout() {
+    await logout();
     navigate("/login");
   }
 
@@ -17,15 +17,23 @@ function Header() {
   return (
     <header className="header">
       <div className="header-inner">
-        <Link to={user ? "/dashboard" : "/login"} className="logo-link">
-          <span className="logo">
-            <span>Offerly</span>
-          </span>
-          <span className="tagline">from applied to offer</span>
-        </Link>
+        <div className="header-brand">
+          <Link to={user ? "/dashboard" : "/login"} className="logo-link">
+            <span className="logo">
+              <span>Offerly</span>
+            </span>
+            <span className="tagline">from applied to offer</span>
+          </Link>
+          <span className="college-badge">ABESEC Ghaziabad</span>
+        </div>
 
         {user && (
           <div className="header-user">
+            {user.role === "admin" && (
+              <Link to="/admin" className="header-pref">
+                🛠 Admin
+              </Link>
+            )}
             <Link to="/preferences" className="header-pref">
               📍 Preferences
             </Link>

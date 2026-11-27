@@ -3,7 +3,7 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth, isValidEmail } from "../context/AuthContext.jsx";
 
 function Signup() {
-  const { user, signup } = useAuth();
+  const { user, authLoading, signup } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({
     name: "",
@@ -13,8 +13,9 @@ function Signup() {
     confirm: "",
   });
   const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
 
-  if (user) {
+  if (!authLoading && user) {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -24,7 +25,7 @@ function Signup() {
     if (errors[name]) setErrors({ ...errors, [name]: "" });
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     const newErrors = {};
 
@@ -42,7 +43,10 @@ function Signup() {
       return;
     }
 
-    const result = signup(form);
+    setSubmitting(true);
+    const result = await signup(form);
+    setSubmitting(false);
+
     if (result.ok) {
       navigate("/dashboard");
     } else {
@@ -92,8 +96,8 @@ function Signup() {
           {errors.confirm && <small className="error">{errors.confirm}</small>}
         </label>
 
-        <button type="submit" className="btn btn-wide">
-          Sign up
+        <button type="submit" className="btn btn-wide" disabled={submitting}>
+          {submitting ? "Signing up..." : "Sign up"}
         </button>
 
         <p className="auth-switch">
